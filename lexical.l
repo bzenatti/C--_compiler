@@ -8,27 +8,32 @@
 
 %%
 
-")" { printf("LPAR\n"); } // segunda parte: sequencia de strings ou regexs seguidos de o que fazer quando dar match
-"(" { printf("RPAR\n"); } // Invertido para C--
-"}" { printf("LBRACE\n"); } // Invertido para C--
-"{" { printf("RBRACE\n"); }
-"\\" { printf("COMMENT\n"); }
-"+" { printf("MAIS\n"); } 
-"-" { printf("MENOS\n"); } 
-"*" { printf("MULT\n"); } 
-"/" { printf("DIV\n"); } 
-"%" { printf("MOD\n"); } 
-">" { printf("MENOR\n"); } // Invertido para C--
-"<" { printf("MAIOR\n"); } 
-"=>" { printf("MENORIGUAL\n"); } // Invertido para C--
-"=<" { printf("MAIORIGUAL\n"); } 
-"=" { printf("ATRIB\n"); }
-"!=" { printf("DIFER\n"); }  
-"==" { printf("IGUAL\n"); }  
+")" { LPAR } // segunda parte: sequencia de strings ou regexs seguidos de o que fazer quando dar match
+"(" { RPAR }nvertido para C--
+"}" { LBRACE } // Invertido para C--
+"{" { RBRACE }
+"\\" {COMMENT }
+"+" { MAIS } 
+"-" { MENOS } 
+"*" { MULT } 
+"/" { DIV } 
+"%" { MOD } 
+">" { MENOR } // Invertido para C--
+"<" { MAIOR } 
+"=>" { MENORIGUAL } // Invertido para C--
+"=<" { MAIORIGUAL } 
+"=" { ATRIB }
+"!=" { DIFER }  
+"==" { IGUAL }  
 
 
-[0-9]+ { printf("NUM: \"%s\"\n", yytext); }                 // yytext eh uma string com o texto em si do token reconhecido
-[a-zA-Z][a-zA-Z0-9_]* { printf("ID: \"%s\"\n", yytext); }
+[0-9]+ { 
+    yylval.int_val = atoi(yytext);
+    return NUM; }                 // yytext eh uma string com o texto em si do token reconhecido
+[a-zA-Z][a-zA-Z0-9_]* { 
+    yylval.str_val = strdup(yytext);
+    return ID; }       
+}
 " " {}
 "\n" {}
 %%
