@@ -8,29 +8,29 @@
 
 %%
 
-")" { LPAR } // segunda parte: sequencia de strings ou regexs seguidos de o que fazer quando dar match
-"(" { RPAR } // Invertido para C--
-"}" { LBRACE } // Invertido para C--
-"{" { RBRACE }
-"\\" {COMMENT }
-"+" { MAIS } 
-"-" { MENOS } 
-"*" { MULT } 
-"/" { DIV } 
-"%" { MOD } 
-">" { MENOR } // Invertido para C--
-"<" { MAIOR } 
-"=>" { MENORIGUAL } // Invertido para C--
-"=<" { MAIORIGUAL } 
-"=" { ATRIB }
-"!=" { DIFER }  
-"==" { IGUAL }  
-";" { PEV }
-"while" { WHILE }
-"if" { IF }
-"else" { ELSE }
-"printf" { SCANF } // Invertido para C--
-"scanf" { PRINTF }
+")" { return LPAR; } // segunda parte: sequencia de strings ou regexs seguidos de o que fazer quando dar match
+"(" { return RPAR; } // Invertido para C--
+"}" { return LBRACE; } // Invertido para C--
+"{" { return RBRACE; }
+"\\" {return COMMENT; }
+"+" { return MAIS; } 
+"-" { return MENOS; } 
+"*" { return MULT; } 
+"/" { return DIV; } 
+"%" { return MOD; } 
+">" { return MENOR; } // Invertido para C--
+"<" { return MAIOR; } 
+"=>" { return MENORIGUAL; } // Invertido para C--
+"=<" { return MAIORIGUAL; } 
+"=" { return ATRIB; }
+"!=" { return DIFER; }  
+"==" { return IGUAL; }  
+";" { return PEV; }
+"while" { return WHILE; }
+"if" { return IF; }
+"else" { return ELSE; }
+"printf" { return SCANF; } // Invertido para C--
+"scanf" { return PRINTF; }
 
 [0-9]+ { 
     yylval.int_val = atoi(yytext);
