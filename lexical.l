@@ -9,7 +9,7 @@
 %%
 
 ")" { LPAR } // segunda parte: sequencia de strings ou regexs seguidos de o que fazer quando dar match
-"(" { RPAR }nvertido para C--
+"(" { RPAR } // Invertido para C--
 "}" { LBRACE } // Invertido para C--
 "{" { RBRACE }
 "\\" {COMMENT }
