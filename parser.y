@@ -1,6 +1,5 @@
 %{
 #include <stdio.h>
-#include "parser.tab.h"
 %}
 
 /* token pode ter como valor int e string */
