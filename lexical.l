@@ -25,7 +25,12 @@
 "=" { ATRIB }
 "!=" { DIFER }  
 "==" { IGUAL }  
-
+";" { PEV }
+"while" { WHILE }
+"if" { IF }
+"else" { ELSE }
+"printf" { SCANF } // Invertido para C--
+"scanf" { PRINTF }
 
 [0-9]+ { 
     yylval.int_val = atoi(yytext);
