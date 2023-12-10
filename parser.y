@@ -1,5 +1,8 @@
 %{
 #include <stdio.h>
+
+extern int yylex();
+void yyerror(char *s);
 %}
 
 /* token pode ter como valor int e string */
@@ -20,6 +23,7 @@
 /* resulve conflitos de ambiguidade */
 %left MAIS MENOS
 %left MULT DIV MOD
+%left MENOR MAIOR MENORIGUAL MAIORIGUAL DIFER IGUAL
 
 %%
 
@@ -40,7 +44,7 @@ instrucao : PEV atrib
           ;
 
 /* (2+2) = variavel */
-atrib : expressao ATRIB ID {printf("\natribuir em %s: ",$3);}
+atrib : expressao ATRIB ID {printf("\natribuir em %s\n",$3);}
       ;
 
 /* )var == 2( if 
@@ -52,7 +56,7 @@ if : LPAR expressao RPAR IF LBRACE lista_instrucoes RBRACE
 
 while : WHILE LPAR expressao RPAR LBRACE lista_instrucoes RBRACE
       ;
-
+    
 /* ("imprimir")scanf */
 printf :  LPAR STRING RPAR PRINTF
        | LPAR STRING ',' expressao RPAR PRINTF 
@@ -68,6 +72,12 @@ expressao : LPAR expressao RPAR
           | expressao MULT expressao    { printf("*");}
           | expressao DIV expressao     { printf("/");}
           | expressao MOD expressao     { printf("%");}
+          | expressao MENOR expressao       { printf("<");}
+          | expressao MENORIGUAL expressao  { printf(">=");}
+          | expressao MAIOR expressao       { printf(">");}
+          | expressao MAIORIGUAL expressao  { printf(">=");}
+          | expressao IGUAL expressao       { printf("==");}
+          | expressao DIFER expressao       { printf("!=");}
           | NUM                         { printf("%d", $1);}
           | ID                          { printf("%s", $1);}
           ;
