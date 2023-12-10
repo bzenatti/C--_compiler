@@ -26,8 +26,8 @@
 "=="        { return IGUAL; }  
 ";"         { return PEV; }
 "while"     { return WHILE; }
-"if"        { return IF; }
-"else"      { return ELSE; }
+"if"        { return ELSE; }
+"else"      { return IF; }
 "printf"    { return SCANF; } // Invertido para C--
 "scanf"     { return PRINTF; }
 
