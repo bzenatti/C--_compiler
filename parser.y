@@ -1,18 +1,55 @@
 %{
 #include <stdio.h>
 
-extern int yylex();
-void yyerror(char *s);
+#define MAX 1000
+
+// Um simbolo da tabela de simbolos é um id e seu endereço
+typedef struct {
+    char *id;
+    int end;
+} simbolo;
+
+// Vetor de simbolos (a tabela de simbolos em si)
+simbolo tabsimb[MAX];
+int nsimbs = 0;
+
+// Dado um ID, busca na tabela de simbolos o endereço respectivo
+int getendereco(char *id) {
+    for (int i=0;i<nsimbs;i++)
+        if (!strcmp(tabsimb[i].id, id))
+            return tabsimb[i].end;
+}
+
+typedef struct {
+    int inicio;
+    int fim;
+} rotulo;
+
+rotulo pilharot[MAX];
+int nrots = 0;
+int top = -1;
+
+void push(rotulo rot) {
+    printf("\nR%d: NADA\n", rot.inicio);
+    if (top < MAX - 1)
+        pilharot[++top] = rot;
+}
+
+void pop() {
+    printf("R%d: NADA\n\n", pilharot[top].fim);
+    if (top == -1) return;
+    else  top--;
+}
+
 %}
 
-/* token pode ter como valor int e string */
 %union {
     char *str_val;
     int int_val;
 }
 
 /* indicação do tipo do texto/valor de um token, conforme o union. */
-%token <str_val>ID <int_val>NUM  
+%token <str_val>ID <int_val>NUM INT
 %token ATRIB PEV MAIS MENOS MULT DIV MOD
 %token MENOR MAIOR MENORIGUAL MAIORIGUAL DIFER IGUAL
 %token WHILE IF ELSE SCANF PRINTF
@@ -24,62 +61,91 @@ void yyerror(char *s);
 %left MAIS MENOS
 %left MULT DIV MOD
 %left MENOR MAIOR MENORIGUAL MAIORIGUAL DIFER IGUAL
+%left IF WHILE
 
 %%
 
 /* o código depois de um simbolo será executado quando o simbolo for
    "encontrado" na entrada (reduce) */
 
-programa : lista_instrucoes ;
+programa : lista_instrucoes                         { printf("SAIR\n"); }
+         ;
 
 lista_instrucoes : instrucao
                  | lista_instrucoes instrucao
                  ;
 
-instrucao : PEV atrib 
-          | if
+instrucao : PEV decl 
+          | PEV atrib 
+          | if_else
           | while
           | PEV printf
           | PEV scanf
           ;
 
+decl : ID INT { tabsimb[nsimbs] = (simbolo){$1, nsimbs}; nsimbs++; }
+     ;
+
 /* (2+2) = variavel */
-atrib : expressao ATRIB ID {printf("\natribuir em %s\n",$3);}
+atrib : expressao ATRIB ID  { printf("ATR %%%d\n",  getendereco($3)); }
       ;
 
 /* )var == 2( else 
         } { 
     if } { */
-if : LPAR expressao RPAR IF LBRACE lista_instrucoes RBRACE
-   | LPAR expressao RPAR IF LBRACE lista_instrucoes RBRACE ELSE LBRACE lista_instrucoes RBRACE 
-   ;
 
-while : WHILE LPAR expressao RPAR LBRACE lista_instrucoes RBRACE
+block : LBRACE 
+        lista_instrucoes 
+        RBRACE
+      |;
+
+if_else : IF                                          { push((rotulo){nrots, ++nrots}); }                                
+          LPAR 
+          condicao                                    { printf("GFALSE R%d\n",(pilharot[top].fim)); }
+          RPAR 
+          block                                       { pop(); }
+        | IF                                          { push((rotulo){nrots, ++nrots}); }                                
+          LPAR 
+          condicao                                    { printf("GFALSE R%d\n",(pilharot[top].fim)); }
+          RPAR 
+          block                                       { pop(); }
+          ELSE
+          block
+        ;
+
+while : WHILE                                        { push((rotulo){nrots, ++nrots}); }
+        LPAR 
+        condicao                                     { printf("GFALSE R%d\n", (pilharot[top].fim)); }
+        RPAR 
+        block                                        { printf("GOTO R%d\n", pilharot[top].inicio); pop(); }
       ;
     
 /* )"imprimir"(scanf */
-printf :  LPAR STRING RPAR PRINTF                   { printf("IMPR\n");}
-       | LPAR STRING ',' expressao RPAR PRINTF      { printf("IMPR\n");}
+printf :  LPAR STRING RPAR PRINTF                    { printf("IMPR\n"); }
+       | LPAR STRING ',' expressao RPAR PRINTF       { printf("IMPR\n"); }
        ;
 
 /* )"string", &var(printf */
-scanf : LPAR STRING ',' '&' ID RPAR SCANF           { printf("LEIA\n");}
+scanf : LPAR STRING ',' '&' ID RPAR SCANF            { printf("LEIA\n"); }
       ;
 
+condicao :  LPAR condicao RPAR
+          | expressao MENOR expressao                 { printf("MENOR\n");}
+          | expressao MENORIGUAL expressao            { printf("MENOREQ\n"); }
+          | expressao MAIOR expressao                 { printf("MAIOR\n");}
+          | expressao MAIORIGUAL expressao            { printf("MAIOREQ\n"); }
+          | expressao IGUAL expressao                 { printf("IGUAL\n"); }
+          | expressao DIFER expressao                 { printf("DIFER\n"); }
+          ;
+
 expressao : LPAR expressao RPAR
-          | expressao MAIS expressao                { printf("+");}
-          | expressao MENOS expressao               { printf("-");}
-          | expressao MULT expressao                { printf("*");}
-          | expressao DIV expressao                 { printf("/");}
-          | expressao MOD expressao                 { printf("%");}
-          | expressao MENOR expressao               { printf("<");}
-          | expressao MENORIGUAL expressao          { printf(">=");}
-          | expressao MAIOR expressao               { printf(">");}
-          | expressao MAIORIGUAL expressao          { printf(">=");}
-          | expressao IGUAL expressao               { printf("==");}
-          | expressao DIFER expressao               { printf("!=");}
-          | NUM                                     { printf("%d", $1);}
-          | ID                                      { printf("%s", $1);}
+          | expressao MAIS expressao                { printf("SOMA\n"); }
+          | expressao MENOS expressao               { printf("SUB\n"); }
+          | expressao MULT expressao                { printf("MULT\n"); }         
+          | expressao DIV expressao                 { printf("DIV\n"); }             
+          | expressao MOD expressao                 { printf("MOD\n");}        
+          | NUM                                     { printf("PUSH %d\n", $1); }
+          | ID                                      { printf("PUSH %%%d\n",  getendereco($1)); }
           ; 
 
 %%
