@@ -47,9 +47,9 @@ instrucao : PEV atrib
 atrib : expressao ATRIB ID {printf("\natribuir em %s\n",$3);}
       ;
 
-/* )var == 2( if 
+/* )var == 2( else 
         } { 
-    else } { */
+    if } { */
 if : LPAR expressao RPAR IF LBRACE lista_instrucoes RBRACE
    | LPAR expressao RPAR IF LBRACE lista_instrucoes RBRACE ELSE LBRACE lista_instrucoes RBRACE 
    ;
@@ -57,30 +57,30 @@ if : LPAR expressao RPAR IF LBRACE lista_instrucoes RBRACE
 while : WHILE LPAR expressao RPAR LBRACE lista_instrucoes RBRACE
       ;
     
-/* ("imprimir")scanf */
-printf :  LPAR STRING RPAR PRINTF
-       | LPAR STRING ',' expressao RPAR PRINTF 
+/* )"imprimir"(scanf */
+printf :  LPAR STRING RPAR PRINTF                   { printf("IMPR\n");}
+       | LPAR STRING ',' expressao RPAR PRINTF      { printf("IMPR\n");}
        ;
 
-/* ("string", &var)printf */
-scanf : SCANF LPAR STRING ',' '&' ID RPAR
+/* )"string", &var(printf */
+scanf : LPAR STRING ',' '&' ID RPAR SCANF           { printf("LEIA\n");}
       ;
 
 expressao : LPAR expressao RPAR
-          | expressao MAIS expressao    { printf("+");}
-          | expressao MENOS expressao   { printf("-");}
-          | expressao MULT expressao    { printf("*");}
-          | expressao DIV expressao     { printf("/");}
-          | expressao MOD expressao     { printf("%");}
-          | expressao MENOR expressao       { printf("<");}
-          | expressao MENORIGUAL expressao  { printf(">=");}
-          | expressao MAIOR expressao       { printf(">");}
-          | expressao MAIORIGUAL expressao  { printf(">=");}
-          | expressao IGUAL expressao       { printf("==");}
-          | expressao DIFER expressao       { printf("!=");}
-          | NUM                         { printf("%d", $1);}
-          | ID                          { printf("%s", $1);}
-          ;
+          | expressao MAIS expressao                { printf("+");}
+          | expressao MENOS expressao               { printf("-");}
+          | expressao MULT expressao                { printf("*");}
+          | expressao DIV expressao                 { printf("/");}
+          | expressao MOD expressao                 { printf("%");}
+          | expressao MENOR expressao               { printf("<");}
+          | expressao MENORIGUAL expressao          { printf(">=");}
+          | expressao MAIOR expressao               { printf(">");}
+          | expressao MAIORIGUAL expressao          { printf(">=");}
+          | expressao IGUAL expressao               { printf("==");}
+          | expressao DIFER expressao               { printf("!=");}
+          | NUM                                     { printf("%d", $1);}
+          | ID                                      { printf("%s", $1);}
+          ; 
 
 %%
 
