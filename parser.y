@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 
 #define MAX 1000
 
@@ -30,13 +31,11 @@ int nrots = 0;
 int top = -1;
 
 void push(rotulo rot) {
-    printf("\nR%d: NADA\n", rot.inicio);
     if (top < MAX - 1)
         pilharot[++top] = rot;
 }
 
 void pop() {
-    printf("R%d: NADA\n\n", pilharot[top].fim);
     if (top == -1) return;
     else  top--;
 }
@@ -62,22 +61,22 @@ void pop() {
 %left MAIS MENOS
 %left MULT DIV MOD
 %left MENOR MAIOR MENORIGUAL MAIORIGUAL DIFER IGUAL
-%left IF ELSE
+
+%precedence LBRACE
 
 %%
 
 /* o código depois de um simbolo será executado quando o simbolo for
    "encontrado" na entrada (reduce) */
 
-programa : lista_instrucoes                         { printf("SAIR\n"); }
+programa : lista_instrucoes                         { printf("\tSAIR\n"); }
          ;
 
 lista_instrucoes : instrucao
                  | lista_instrucoes instrucao
                  ;
 
-instrucao : if_else
-          | while
+instrucao : LPAR  condicao  RPAR desv_condicionais
           | PEV printf
           | PEV scanf
           | PEV decl 
@@ -88,64 +87,60 @@ decl : ID INT { tabsimb[nsimbs] = (simbolo){$1, nsimbs}; nsimbs++; }
      ;
 
 /* (2+2) = variavel */
-atrib : expressao ATRIB ID  { printf("ATR %%%d\n",  getendereco($3)); }
+atrib : expressao ATRIB ID  { printf("\tATR %%%d\n",  getendereco($3)); }
       ;
 
-/* )var == 2( else 
-        } { 
-    if } { */
+else : ELSE LBRACE lista_instrucoes RBRACE  | ;
 
-block : LBRACE 
-        lista_instrucoes 
-        RBRACE
-      ;
-
-if_else : IF                                          //{ push((rotulo){nrots, ++nrots}); }                                
-          LPAR 
-          condicao                                    //{ printf("GFALSE R%d\n",(pilharot[top].fim)); }
-          RPAR 
-          block                                       //{ pop(); }
-        | IF                                          //{ push((rotulo){nrots, ++nrots}); }                                
-          LPAR 
-          condicao                                    //{ printf("GFALSE R%d\n",(pilharot[top].fim)); }
-          RPAR 
-          block                                       //{ pop(); }
-          ELSE
-          if_else
-        | block
-        ;
-
-while : LPAR 
-        condicao                                     { push((rotulo){nrots, ++nrots}); printf("GFALSE R%d\n", (pilharot[top].fim)); }
-        RPAR
-        WHILE 
-        block                                        { printf("GOTO R%d\n", pilharot[top].inicio); pop(); }
-      ;
+desv_condicionais : WHILE                            {  
+                                                            push((rotulo){nrots, ++nrots});  
+                                                            printf("R%d: NADA\n", pilharot[top].inicio);
+                                                            printf("\tGFALSE R%d\n", (pilharot[top].fim)); 
+                                                     }
+                    LBRACE lista_instrucoes RBRACE   { 
+                                                            printf("\tGOTO R%d\n", pilharot[top].inicio); 
+                                                            printf("R%d: NADA\n\n", pilharot[top].fim);
+                                                            pop(); 
+                                                     }
+                  | IF                               {
+                                                            push((rotulo){nrots, ++nrots});
+                                                            printf("\tGFALSE R%d\n", (pilharot[top].inicio)); 
+                                                     }
+                    LBRACE lista_instrucoes RBRACE   { 
+                                                            printf("\tGOTO R%d\n", pilharot[top].fim); 
+                                                            printf("R%d: NADA\n", pilharot[top].inicio); 
+                                                     }
+                  else                               {
+                                                            printf("R%d: NADA\n", pilharot[top].fim);
+                                                            pop();
+                                                     }
+                  ;
 
 /* )"%d", a (scanf */
-printf : LPAR REFINT VIRG expressao RPAR PRINTF       { printf("IMPR\n"); }
+printf : LPAR REFINT VIRG expressao RPAR PRINTF       { printf("\tIMPR\n"); }
        ;
 
 /* )"%d", &var(printf */
-scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF            { printf("LEIA\n"); printf("PUSH %%%d\n",  getendereco($5)); }
+scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF            { printf("\tLEIA\n"); printf("\tPUSH %%%d\n",  getendereco($5)); }
       ;
 
-condicao :  expressao MENOR expressao                 { printf("MENOR\n");}
-          | expressao MENORIGUAL expressao            { printf("MENOREQ\n"); }
-          | expressao MAIOR expressao                 { printf("MAIOR\n");}
-          | expressao MAIORIGUAL expressao            { printf("MAIOREQ\n"); }
-          | expressao IGUAL expressao                 { printf("IGUAL\n"); }
-          | expressao DIFER expressao                 { printf("DIFER\n"); }
+condicao :  expressao MENOR expressao                 { printf("\tMENOR\n");}
+          | expressao MENORIGUAL expressao            { printf("\tMENOREQ\n"); }
+          | expressao MAIOR expressao                 { printf("\tMAIOR\n");}
+          | expressao MAIORIGUAL expressao            { printf("\tMAIOREQ\n"); }
+          | expressao IGUAL expressao                 { printf("\tIGUAL\n"); }
+          | expressao DIFER expressao                 { printf("\tDIFER\n"); }
+          | expressao
           ;
 
 expressao : LPAR expressao RPAR
-          | expressao MAIS expressao                { printf("SOMA\n"); }
-          | expressao MENOS expressao               { printf("SUB\n"); }
-          | expressao MULT expressao                { printf("MULT\n"); }         
-          | expressao DIV expressao                 { printf("DIV\n"); }             
-          | expressao MOD expressao                 { printf("MOD\n");}        
-          | NUM                                     { printf("PUSH %d\n", $1); }
-          | ID                                      { printf("PUSH %%%d\n",  getendereco($1)); }
+          | expressao MAIS expressao                { printf("\tSOMA\n"); }
+          | expressao MENOS expressao               { printf("\tSUB\n"); }
+          | expressao MULT expressao                { printf("\tMULT\n"); }         
+          | expressao DIV expressao                 { printf("\tDIV\n"); }             
+          | expressao MOD expressao                 { printf("\tMOD\n");}        
+          | NUM                                     { printf("\tPUSH %d\n", $1); }
+          | ID                                      { printf("\tPUSH %%%d\n",  getendereco($1)); }
           ; 
 
 %%
