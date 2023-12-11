@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX 1000
+#define MAX 10000
 
 FILE *output;
+char aux_cond[MAX], aux2[MAX];
 int aux = 0;
 
 // Um simbolo da tabela de simbolos é um id e seu endereço
@@ -94,7 +95,7 @@ lista_instrucoes : instrucao
                  | lista_instrucoes instrucao
                  ;
 
-instrucao : LPAR  condicao  RPAR desv_condicionais
+instrucao : condicionais
           | PEV printf
           | PEV scanf
           | PEV decl 
@@ -110,7 +111,9 @@ decl : ID INT                                       {
                                                         tabsimb[nsimbs] = (simbolo){$1, nsimbs}; 
                                                         nsimbs++; 
                                                     }
-      | expressao ATRIB ID INT                      { 
+      | expressao ATRIB ID INT                      {   
+                                                        fprintf(output, "%s", aux_cond); 
+                                                        memset(aux_cond, 0, sizeof aux_cond);
                                                         checkendereco($3);
                                                         tabsimb[nsimbs] = (simbolo){$3, nsimbs}; 
                                                         nsimbs++;   
@@ -119,20 +122,31 @@ decl : ID INT                                       {
      ;
 
 /* ;(2+2) = variavel */
-atrib : expressao ATRIB ID                          {   fprintf(output, "\tATR %%%d\n",  getendereco($3));   }
+atrib : expressao ATRIB ID                          {   
+                                                        fprintf(output, "%s", aux_cond); 
+                                                        memset(aux_cond, 0, sizeof aux_cond);
+                                                        fprintf(output, "\tATR %%%d\n",  getendereco($3));   
+                                                    }
       ;
 
 /* 
     ) a < c ( while } {
     ) a != 0 ( else } { if  } {
 */
+
+condicionais: LPAR  condicao  RPAR 
+            desv_condicionais
+            ;
+
 desv_condicionais : WHILE                           {  
-                                                        push((rotulo){nrots, ++nrots});  
-                                                        fprintf(output, "\tGFALSE R%d\n", (pilharot[top].fim)); 
+                                                        push((rotulo){nrots, ++nrots});
                                                         fprintf(output, "R%d: NADA\n", pilharot[top].inicio);
-                                                    }
+                                                        fprintf(output, "%s", aux_cond);
+                                                        memset(aux_cond, 0, sizeof aux_cond);
+                                                        fprintf(output, "\tGFALSE R%d\n", (pilharot[top].fim));
+                                                    }	
                     LBRACE lista_instrucoes RBRACE  { 
-                                                        fprintf(output, "\tGOTO R%d\n", pilharot[top].inicio); 
+                                                        fprintf(output, "\tGOTO R%d\n", pilharot[top].inicio);
                                                         fprintf(output, "R%d: NADA\n", pilharot[top].fim);
                                                         pop(); 
                                                     }
@@ -152,7 +166,11 @@ desv_condicionais : WHILE                           {
 else : ELSE LBRACE lista_instrucoes RBRACE  | ;
 
 /* )"%d", a (scanf */
-printf : LPAR REFINT VIRG expressao RPAR PRINTF     {   fprintf(output, "\tIMPR\n"); }
+printf : LPAR REFINT VIRG expressao                 {   
+                                                        fprintf(output, "%s", aux_cond); 
+                                                        memset(aux_cond, 0, sizeof aux_cond); 
+                                                    }
+         RPAR PRINTF                                {   fprintf(output, "\tIMPR\n");                            }
        ;
 
 /* )"%d", &var(printf */
@@ -162,25 +180,31 @@ scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {
                                                     }
       ;
 
-condicao :  expressao MENOR expressao               {   fprintf(output, "\tMENOR\n");                        }
-          | expressao MENORIGUAL expressao          {   fprintf(output, "\tMENOREQ\n");                      }
-          | expressao MAIOR expressao               {   fprintf(output, "\tMAIOR\n");                        }
-          | expressao MAIORIGUAL expressao          {   fprintf(output, "\tMAIOREQ\n");                      }
-          | expressao IGUAL expressao               {   fprintf(output, "\tIGUAL\n");                        }
-          | expressao DIFER expressao               {   fprintf(output, "\tDIFER\n");                        }
+condicao :  expressao MENOR expressao               {   strcat(aux_cond, "\tMENOR\n");                        }
+          | expressao MENORIGUAL expressao          {   strcat(aux_cond, "\tMENOREQ\n");                      }
+          | expressao MAIOR expressao               {   strcat(aux_cond, "\tMAIOR\n");                        }
+          | expressao MAIORIGUAL expressao          {   strcat(aux_cond, "\tMAIOREQ\n");                      }
+          | expressao IGUAL expressao               {   strcat(aux_cond, "\tIGUAL\n");                        }
+          | expressao DIFER expressao               {   strcat(aux_cond, "\tDIFER\n");                        }
           | expressao
           ;
 
 expressao : LPAR expressao RPAR
-          | expressao MAIS expressao                {   fprintf(output, "\tSOMA\n");                         }
-          | expressao MENOS expressao               {   fprintf(output, "\tSUB\n");                          }
-          | expressao MULT expressao                {   fprintf(output, "\tMULT\n");                         }         
-          | expressao DIV expressao                 {   fprintf(output, "\tDIV\n");                          }
-          | expressao MOD expressao                 {   fprintf(output, "\tMOD\n");                          }        
-          | NUM                                     {   fprintf(output, "\tPUSH %d\n", $1);                  }
-          | ID                                      {   
+          | expressao MAIS expressao                {   strcat(aux_cond, "\tSOMA\n");                         }
+          | expressao MENOS expressao               {   strcat(aux_cond, "\tSUB\n");                          }
+          | expressao MULT expressao                {   strcat(aux_cond, "\tMULT\n");                         }         
+          | expressao DIV expressao                 {   strcat(aux_cond, "\tDIV\n");                          }
+          | expressao MOD expressao                 {   strcat(aux_cond, "\tMOD\n");                          }        
+          | NUM                                     {   
+                                                        sprintf(aux2, "\tPUSH %d\n", $1);
+                                                        strcat(aux_cond, aux2);                  
+                                                        memset(aux2, 0, sizeof aux2);
+                                                    }
+          | ID                                      {    
+                                                        sprintf(aux2, "\tPUSH %%%d\n",  getendereco($1));
+                                                        strcat(aux_cond, aux2);   
                                                         aux = getendereco($1);
-                                                        fprintf(output, "\tPUSH %%%d\n",  getendereco($1));  
+                                                        memset(aux2, 0, sizeof aux2);
                                                     }
           ; 
 
