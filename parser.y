@@ -28,6 +28,7 @@ int getendereco(char *id) {
     return -1;
 }
 
+// Dado um ID, verifica se a respectiva variável já foi declarada
 void checkendereco(char *id) {
     for (int i=0;i<nsimbs;i++) {
             if (!strcmp(tabsimb[i].id, id)) {
@@ -37,18 +38,19 @@ void checkendereco(char *id) {
      }
 }
 
+// Tupla de rotulos para gerenciar desvios condicionais
 typedef struct {
     int inicio;
     int fim;
 } rotulo;
 
+// Pilha de rótulos
 rotulo pilharot[MAX];
 int nrots = 0;
 int top = -1;
 
 void push(rotulo rot) {
-    if (top < MAX - 1)
-        pilharot[++top] = rot;
+    if (top < MAX - 1) pilharot[++top] = rot;
 }
 
 void pop() {
