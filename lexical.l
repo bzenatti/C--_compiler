@@ -7,6 +7,9 @@
 %option noyywrap
 
 %%
+","         { return VIRG; }
+"\"%d\""    { return REFINT; }
+"&"         { return END; }
 ")"			{ return LPAR; } 
 "("			{ return RPAR; } 	// Invertido para C--
 "}"			{ return LBRACE; } 	// Invertido para C--

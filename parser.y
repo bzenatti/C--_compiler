@@ -56,12 +56,13 @@ void pop() {
 %token LPAR RPAR
 %token LBRACE RBRACE
 %token <str_val>STRING
+%token REFINT VIRG END
 
 /* resulve conflitos de ambiguidade */
 %left MAIS MENOS
 %left MULT DIV MOD
 %left MENOR MAIOR MENORIGUAL MAIORIGUAL DIFER IGUAL
-%left IF WHILE
+%left IF ELSE
 
 %%
 
@@ -75,12 +76,12 @@ lista_instrucoes : instrucao
                  | lista_instrucoes instrucao
                  ;
 
-instrucao : PEV decl 
-          | PEV atrib 
-          | if_else
+instrucao : if_else
           | while
           | PEV printf
           | PEV scanf
+          | PEV decl 
+          | PEV atrib           
           ;
 
 decl : ID INT { tabsimb[nsimbs] = (simbolo){$1, nsimbs}; nsimbs++; }
@@ -97,40 +98,39 @@ atrib : expressao ATRIB ID  { printf("ATR %%%d\n",  getendereco($3)); }
 block : LBRACE 
         lista_instrucoes 
         RBRACE
-      |;
+      ;
 
-if_else : IF                                          { push((rotulo){nrots, ++nrots}); }                                
+if_else : IF                                          //{ push((rotulo){nrots, ++nrots}); }                                
           LPAR 
-          condicao                                    { printf("GFALSE R%d\n",(pilharot[top].fim)); }
+          condicao                                    //{ printf("GFALSE R%d\n",(pilharot[top].fim)); }
           RPAR 
-          block                                       { pop(); }
-        | IF                                          { push((rotulo){nrots, ++nrots}); }                                
+          block                                       //{ pop(); }
+        | IF                                          //{ push((rotulo){nrots, ++nrots}); }                                
           LPAR 
-          condicao                                    { printf("GFALSE R%d\n",(pilharot[top].fim)); }
+          condicao                                    //{ printf("GFALSE R%d\n",(pilharot[top].fim)); }
           RPAR 
-          block                                       { pop(); }
+          block                                       //{ pop(); }
           ELSE
-          block
+          if_else
+        | block
         ;
 
-while : WHILE                                        { push((rotulo){nrots, ++nrots}); }
-        LPAR 
-        condicao                                     { printf("GFALSE R%d\n", (pilharot[top].fim)); }
-        RPAR 
+while : LPAR 
+        condicao                                     { push((rotulo){nrots, ++nrots}); printf("GFALSE R%d\n", (pilharot[top].fim)); }
+        RPAR
+        WHILE 
         block                                        { printf("GOTO R%d\n", pilharot[top].inicio); pop(); }
       ;
-    
-/* )"imprimir"(scanf */
-printf :  LPAR STRING RPAR PRINTF                    { printf("IMPR\n"); }
-       | LPAR STRING ',' expressao RPAR PRINTF       { printf("IMPR\n"); }
+
+/* )"%d", a (scanf */
+printf : LPAR REFINT VIRG expressao RPAR PRINTF       { printf("IMPR\n"); }
        ;
 
-/* )"string", &var(printf */
-scanf : LPAR STRING ',' '&' ID RPAR SCANF            { printf("LEIA\n"); }
+/* )"%d", &var(printf */
+scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF            { printf("LEIA\n"); printf("PUSH %%%d\n",  getendereco($5)); }
       ;
 
-condicao :  LPAR condicao RPAR
-          | expressao MENOR expressao                 { printf("MENOR\n");}
+condicao :  expressao MENOR expressao                 { printf("MENOR\n");}
           | expressao MENORIGUAL expressao            { printf("MENOREQ\n"); }
           | expressao MAIOR expressao                 { printf("MAIOR\n");}
           | expressao MAIORIGUAL expressao            { printf("MAIOREQ\n"); }
