@@ -6,7 +6,7 @@
 #define MAX 10000
 
 FILE *output;
-char aux_cond[MAX], aux2[MAX];
+char buffer[MAX], straux[MAX];
 int aux = 0;
 
 // Um simbolo da tabela de simbolos é um id e seu endereço
@@ -38,6 +38,11 @@ void checkendereco(char *id) {
                 exit(1);
             }
      }
+}
+
+void imprimir_buffer() {
+    fprintf(output, "%s", buffer);
+    memset(buffer, 0, sizeof buffer);
 }
 
 // Tupla de rotulos para gerenciar desvios condicionais
@@ -112,8 +117,7 @@ decl : ID INT                                       {
                                                         nsimbs++; 
                                                     }
       | expressao ATRIB ID INT                      {   
-                                                        fprintf(output, "%s", aux_cond); 
-                                                        memset(aux_cond, 0, sizeof aux_cond);
+                                                        imprimir_buffer();
                                                         checkendereco($3);
                                                         tabsimb[nsimbs] = (simbolo){$3, nsimbs}; 
                                                         nsimbs++;   
@@ -123,8 +127,7 @@ decl : ID INT                                       {
 
 /* ;(2+2) = variavel */
 atrib : expressao ATRIB ID                          {   
-                                                        fprintf(output, "%s", aux_cond); 
-                                                        memset(aux_cond, 0, sizeof aux_cond);
+                                                        imprimir_buffer();
                                                         fprintf(output, "\tATR %%%d\n",  getendereco($3));   
                                                     }
       ;
@@ -141,8 +144,7 @@ condicionais: LPAR  condicao  RPAR
 desv_condicionais : WHILE                           {  
                                                         push((rotulo){nrots, ++nrots});
                                                         fprintf(output, "R%d: NADA\n", pilharot[top].inicio);
-                                                        fprintf(output, "%s", aux_cond);
-                                                        memset(aux_cond, 0, sizeof aux_cond);
+                                                        imprimir_buffer();
                                                         fprintf(output, "\tGFALSE R%d\n", (pilharot[top].fim));
                                                     }	
                     LBRACE lista_instrucoes RBRACE  { 
@@ -166,10 +168,7 @@ desv_condicionais : WHILE                           {
 else : ELSE LBRACE lista_instrucoes RBRACE  | ;
 
 /* )"%d", a (scanf */
-printf : LPAR REFINT VIRG expressao                 {   
-                                                        fprintf(output, "%s", aux_cond); 
-                                                        memset(aux_cond, 0, sizeof aux_cond); 
-                                                    }
+printf : LPAR REFINT VIRG expressao                 {   imprimir_buffer();                                        }
          RPAR PRINTF                                {   fprintf(output, "\tIMPR\n");                            }
        ;
 
@@ -180,31 +179,31 @@ scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {
                                                     }
       ;
 
-condicao :  expressao MENOR expressao               {   strcat(aux_cond, "\tMENOR\n");                        }
-          | expressao MENORIGUAL expressao          {   strcat(aux_cond, "\tMENOREQ\n");                      }
-          | expressao MAIOR expressao               {   strcat(aux_cond, "\tMAIOR\n");                        }
-          | expressao MAIORIGUAL expressao          {   strcat(aux_cond, "\tMAIOREQ\n");                      }
-          | expressao IGUAL expressao               {   strcat(aux_cond, "\tIGUAL\n");                        }
-          | expressao DIFER expressao               {   strcat(aux_cond, "\tDIFER\n");                        }
+condicao :  expressao MENOR expressao               {   strcat(buffer, "\tMENOR\n");                        }
+          | expressao MENORIGUAL expressao          {   strcat(buffer, "\tMENOREQ\n");                      }
+          | expressao MAIOR expressao               {   strcat(buffer, "\tMAIOR\n");                        }
+          | expressao MAIORIGUAL expressao          {   strcat(buffer, "\tMAIOREQ\n");                      }
+          | expressao IGUAL expressao               {   strcat(buffer, "\tIGUAL\n");                        }
+          | expressao DIFER expressao               {   strcat(buffer, "\tDIFER\n");                        }
           | expressao
           ;
 
 expressao : LPAR expressao RPAR
-          | expressao MAIS expressao                {   strcat(aux_cond, "\tSOMA\n");                         }
-          | expressao MENOS expressao               {   strcat(aux_cond, "\tSUB\n");                          }
-          | expressao MULT expressao                {   strcat(aux_cond, "\tMULT\n");                         }         
-          | expressao DIV expressao                 {   strcat(aux_cond, "\tDIV\n");                          }
-          | expressao MOD expressao                 {   strcat(aux_cond, "\tMOD\n");                          }        
+          | expressao MAIS expressao                {   strcat(buffer, "\tSOMA\n");                         }
+          | expressao MENOS expressao               {   strcat(buffer, "\tSUB\n");                          }
+          | expressao MULT expressao                {   strcat(buffer, "\tMULT\n");                         }         
+          | expressao DIV expressao                 {   strcat(buffer, "\tDIV\n");                          }
+          | expressao MOD expressao                 {   strcat(buffer, "\tMOD\n");                          }        
           | NUM                                     {   
-                                                        sprintf(aux2, "\tPUSH %d\n", $1);
-                                                        strcat(aux_cond, aux2);                  
-                                                        memset(aux2, 0, sizeof aux2);
+                                                        sprintf(straux, "\tPUSH %d\n", $1);
+                                                        strcat(buffer, straux);                  
+                                                        memset(straux, 0, sizeof straux);
                                                     }
           | ID                                      {    
-                                                        sprintf(aux2, "\tPUSH %%%d\n",  getendereco($1));
-                                                        strcat(aux_cond, aux2);   
+                                                        sprintf(straux, "\tPUSH %%%d\n",  getendereco($1));
+                                                        strcat(buffer, straux);   
                                                         aux = getendereco($1);
-                                                        memset(aux2, 0, sizeof aux2);
+                                                        memset(straux, 0, sizeof straux);
                                                     }
           ; 
 
