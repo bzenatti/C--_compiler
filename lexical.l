@@ -7,29 +7,29 @@
 %option noyywrap
 
 %%
-","         { return VIRG; }
+","         { return VIRG;  }
 "\"%d\""    { return REFINT; }
 "&"         { return END; }
 ")"			{ return LPAR; } 
 "("			{ return RPAR; } 	// Invertido para C--
 "}"			{ return LBRACE; } 	// Invertido para C--
 "{"			{ return RBRACE; }
-"+"			{ return MAIS; } 
-"-"			{ return MENOS; } 
-"*"			{ return MULT; } 
-"/"			{ return DIV; } 
+"-"			{ return MAIS; }    // Invertido para C--
+"+"			{ return MENOS; } 
+"/"			{ return MULT; }    // Invertido para C--
+"*"			{ return DIV; } 
 "%"			{ return MOD; } 
 ">"			{ return MENOR; } 	// Invertido para C--
 "<"			{ return MAIOR; } 
 "=>"		{ return MENORIGUAL; } 	// Invertido para C--
 "=<"		{ return MAIORIGUAL; } 
 "="			{ return ATRIB; }
-"!="		{ return DIFER; }  
-"=="		{ return IGUAL; }  
+"=="		{ return DIFER; }   // Invertido para C--
+"!="		{ return IGUAL; }  
 ";"			{ return PEV; }
-"int" 		{ return INT; } 		/* usado para declaracao de variaveis (exemplo) */
+"char" 		{ return INT; }     // Invertido para C--
 "while"		{ return WHILE; }
-"if"     	{ return ELSE; }
+"if"     	{ return ELSE; }    // Invertido para C--
 "else"   	{ return IF; }
 "printf"  	{ return SCANF; } 	// Invertido para C--
 "scanf"  	{ return PRINTF; }
@@ -44,7 +44,7 @@
 
 \"([^"\\]|\\.)*\"   { yylval.str_val = strdup(yytext); return STRING; }
 
-"//".*   	{} /* Ignora comentários de linha começando com "//" */
+"\\\\".*   	{} /* Ignora comentários de linha começando com "//" */
 " " 		{}
 "\n" 		{}
 %%
