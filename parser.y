@@ -95,7 +95,7 @@ decl : ID INT                                       {
                                                         nsimbs++;
                                                         aux = getendereco($3);
                                                         if (aux == -1) {
-                                                            printf("ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $3);
+                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $3);
                                                             return; 
                                                         }        
                                                         printf("\tATR %%%d\n",  aux); 
@@ -106,7 +106,7 @@ decl : ID INT                                       {
 atrib : expressao ATRIB ID                          {   
                                                         aux = getendereco($3);
                                                         if (aux == -1) {
-                                                            printf("ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $3);
+                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $3);
                                                             return; 
                                                         }        
                                                         printf("\tATR %%%d\n",  aux);   
@@ -114,7 +114,6 @@ atrib : expressao ATRIB ID                          {
       ;
 
 else : ELSE LBRACE lista_instrucoes RBRACE  | ;
-
 desv_condicionais : WHILE                           {  
                                                         push((rotulo){nrots, ++nrots});  
                                                         printf("R%d: NADA\n", pilharot[top].inicio);
@@ -148,7 +147,7 @@ scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {
                                                         printf("\tLEIA\n");
                                                         aux = getendereco($5);
                                                         if (aux == -1) {
-                                                            printf("ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $5);
+                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $5);
                                                             return; 
                                                         }        
                                                         printf("\tPUSH %%%d\n", aux); 
@@ -168,13 +167,13 @@ expressao : LPAR expressao RPAR
           | expressao MAIS expressao                {   printf("\tSOMA\n");                         }
           | expressao MENOS expressao               {   printf("\tSUB\n");                          }
           | expressao MULT expressao                {   printf("\tMULT\n");                         }         
-          | expressao DIV expressao                 {   printf("\tDIV\n");                          }             
+          | expressao DIV expressao                 {   printf("\tDIV\n");                          }
           | expressao MOD expressao                 {   printf("\tMOD\n");                          }        
           | NUM                                     {   printf("\tPUSH %d\n", $1);                  }
           | ID                                      {   
                                                         aux = getendereco($1);
                                                         if (aux == -1) {
-                                                            printf("ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $1);
+                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $1);
                                                             return; 
                                                         }
                                                         printf("\tPUSH %%%d\n",  aux);  
