@@ -1,11 +1,12 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define MAX 1000
 
+FILE *output;
 int aux = 0;
-char erro[1024];
 
 // Um simbolo da tabela de simbolos é um id e seu endereço
 typedef struct {
@@ -86,7 +87,7 @@ void pop() {
 /* o código depois de um simbolo será executado quando o simbolo for
    "encontrado" na entrada (reduce) */
 
-programa : lista_instrucoes                         {   printf("\tSAIR\n");                         }
+programa : lista_instrucoes                         {   fprintf(output, "\tSAIR\n");                         }
          ;
 
 lista_instrucoes : instrucao
@@ -113,12 +114,12 @@ decl : ID INT                                       {
                                                         checkendereco($3);
                                                         tabsimb[nsimbs] = (simbolo){$3, nsimbs}; 
                                                         nsimbs++;   
-                                                        printf("\tATR %%%d\n",  getendereco($3)); 
+                                                        fprintf(output, "\tATR %%%d\n",  getendereco($3)); 
                                                     }
      ;
 
 /* ;(2+2) = variavel */
-atrib : expressao ATRIB ID                          {   printf("\tATR %%%d\n",  getendereco($3));   }
+atrib : expressao ATRIB ID                          {   fprintf(output, "\tATR %%%d\n",  getendereco($3));   }
       ;
 
 /* 
@@ -127,59 +128,59 @@ atrib : expressao ATRIB ID                          {   printf("\tATR %%%d\n",  
 */
 desv_condicionais : WHILE                           {  
                                                         push((rotulo){nrots, ++nrots});  
-                                                        printf("\tGFALSE R%d\n", (pilharot[top].fim)); 
-                                                        printf("R%d: NADA\n", pilharot[top].inicio);
+                                                        fprintf(output, "\tGFALSE R%d\n", (pilharot[top].fim)); 
+                                                        fprintf(output, "R%d: NADA\n", pilharot[top].inicio);
                                                     }
                     LBRACE lista_instrucoes RBRACE  { 
-                                                        printf("\tGOTO R%d\n", pilharot[top].inicio); 
-                                                        printf("R%d: NADA\n", pilharot[top].fim);
+                                                        fprintf(output, "\tGOTO R%d\n", pilharot[top].inicio); 
+                                                        fprintf(output, "R%d: NADA\n", pilharot[top].fim);
                                                         pop(); 
                                                     }
                   | IF                              {
                                                         push((rotulo){nrots, ++nrots});
-                                                        printf("\tGFALSE R%d\n", (pilharot[top].inicio)); 
+                                                        fprintf(output, "\tGFALSE R%d\n", (pilharot[top].inicio)); 
                                                     }
                     LBRACE lista_instrucoes RBRACE  { 
-                                                        printf("\tGOTO R%d\n", pilharot[top].fim); 
-                                                        printf("R%d: NADA\n", pilharot[top].inicio); 
+                                                        fprintf(output, "\tGOTO R%d\n", pilharot[top].fim); 
+                                                        fprintf(output, "R%d: NADA\n", pilharot[top].inicio); 
                                                     }
                   else                              {
-                                                        printf("R%d: NADA\n", pilharot[top].fim);
+                                                        fprintf(output, "R%d: NADA\n", pilharot[top].fim);
                                                         pop();
                                                     }
                   ;
 else : ELSE LBRACE lista_instrucoes RBRACE  | ;
 
 /* )"%d", a (scanf */
-printf : LPAR REFINT VIRG expressao RPAR PRINTF     {   printf("\tIMPR\n"); }
+printf : LPAR REFINT VIRG expressao RPAR PRINTF     {   fprintf(output, "\tIMPR\n"); }
        ;
 
 /* )"%d", &var(printf */
 scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {   
-                                                        printf("\tLEIA\n");       
-                                                        printf("\tPUSH %%%d\n", getendereco($5)); 
+                                                        fprintf(output, "\tLEIA\n");       
+                                                        fprintf(output, "\tPUSH %%%d\n", getendereco($5)); 
                                                     }
       ;
 
-condicao :  expressao MENOR expressao               {   printf("\tMENOR\n");                        }
-          | expressao MENORIGUAL expressao          {   printf("\tMENOREQ\n");                      }
-          | expressao MAIOR expressao               {   printf("\tMAIOR\n");                        }
-          | expressao MAIORIGUAL expressao          {   printf("\tMAIOREQ\n");                      }
-          | expressao IGUAL expressao               {   printf("\tIGUAL\n");                        }
-          | expressao DIFER expressao               {   printf("\tDIFER\n");                        }
+condicao :  expressao MENOR expressao               {   fprintf(output, "\tMENOR\n");                        }
+          | expressao MENORIGUAL expressao          {   fprintf(output, "\tMENOREQ\n");                      }
+          | expressao MAIOR expressao               {   fprintf(output, "\tMAIOR\n");                        }
+          | expressao MAIORIGUAL expressao          {   fprintf(output, "\tMAIOREQ\n");                      }
+          | expressao IGUAL expressao               {   fprintf(output, "\tIGUAL\n");                        }
+          | expressao DIFER expressao               {   fprintf(output, "\tDIFER\n");                        }
           | expressao
           ;
 
 expressao : LPAR expressao RPAR
-          | expressao MAIS expressao                {   printf("\tSOMA\n");                         }
-          | expressao MENOS expressao               {   printf("\tSUB\n");                          }
-          | expressao MULT expressao                {   printf("\tMULT\n");                         }         
-          | expressao DIV expressao                 {   printf("\tDIV\n");                          }
-          | expressao MOD expressao                 {   printf("\tMOD\n");                          }        
-          | NUM                                     {   printf("\tPUSH %d\n", $1);                  }
+          | expressao MAIS expressao                {   fprintf(output, "\tSOMA\n");                         }
+          | expressao MENOS expressao               {   fprintf(output, "\tSUB\n");                          }
+          | expressao MULT expressao                {   fprintf(output, "\tMULT\n");                         }         
+          | expressao DIV expressao                 {   fprintf(output, "\tDIV\n");                          }
+          | expressao MOD expressao                 {   fprintf(output, "\tMOD\n");                          }        
+          | NUM                                     {   fprintf(output, "\tPUSH %d\n", $1);                  }
           | ID                                      {   
                                                         aux = getendereco($1);
-                                                        printf("\tPUSH %%%d\n",  getendereco($1));  
+                                                        fprintf(output, "\tPUSH %%%d\n",  getendereco($1));  
                                                     }
           ; 
 
@@ -188,11 +189,17 @@ expressao : LPAR expressao RPAR
 extern FILE *yyin;                   
 
 int main(int argc, char *argv[]) {
+    output = fopen("programa.pill", "w");
+    if (output == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return 1;
+    }
 
     yyin = fopen(argv[1], "r");       
     yyparse();
-    fclose(yyin);                     
-
+    fclose(yyin); 
+                    
+    fclose(output);
     return 0;
 }
 
