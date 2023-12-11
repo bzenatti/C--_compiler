@@ -5,6 +5,7 @@
 #define MAX 1000
 
 int aux = 0;
+char erro[1024];
 
 // Um simbolo da tabela de simbolos é um id e seu endereço
 typedef struct {
@@ -21,7 +22,19 @@ int getendereco(char *id) {
     for (int i=0;i<nsimbs;i++)
         if (!strcmp(tabsimb[i].id, id))
             return tabsimb[i].end;
+
+    printf("ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", id);
+    exit(1);
     return -1;
+}
+
+void checkendereco(char *id) {
+    for (int i=0;i<nsimbs;i++) {
+            if (!strcmp(tabsimb[i].id, id)) {
+                printf("ERRO SEMÂNTICO: variável \"%s\" declarada mais de uma vez.\n", id);
+                exit(1);
+            }
+     }
 }
 
 typedef struct {
@@ -86,42 +99,39 @@ instrucao : LPAR  condicao  RPAR desv_condicionais
           | PEV atrib           
           ;
 
+/* 
+    ; a char
+    ; 3 = a char
+*/
 decl : ID INT                                       { 
+                                                        checkendereco($1);
                                                         tabsimb[nsimbs] = (simbolo){$1, nsimbs}; 
                                                         nsimbs++; 
                                                     }
       | expressao ATRIB ID INT                      { 
+                                                        checkendereco($3);
                                                         tabsimb[nsimbs] = (simbolo){$3, nsimbs}; 
-                                                        nsimbs++;
-                                                        aux = getendereco($3);
-                                                        if (aux == -1) {
-                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $3);
-                                                            return; 
-                                                        }        
-                                                        printf("\tATR %%%d\n",  aux); 
+                                                        nsimbs++;   
+                                                        printf("\tATR %%%d\n",  getendereco($3)); 
                                                     }
      ;
 
-/* (2+2) = variavel */
-atrib : expressao ATRIB ID                          {   
-                                                        aux = getendereco($3);
-                                                        if (aux == -1) {
-                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $3);
-                                                            return; 
-                                                        }        
-                                                        printf("\tATR %%%d\n",  aux);   
-                                                    }
+/* ;(2+2) = variavel */
+atrib : expressao ATRIB ID                          {   printf("\tATR %%%d\n",  getendereco($3));   }
       ;
 
-else : ELSE LBRACE lista_instrucoes RBRACE  | ;
+/* 
+    ) a < c ( while } {
+    ) a != 0 ( else } { if  } {
+*/
 desv_condicionais : WHILE                           {  
                                                         push((rotulo){nrots, ++nrots});  
-                                                        printf("R%d: NADA\n", pilharot[top].inicio);
                                                         printf("\tGFALSE R%d\n", (pilharot[top].fim)); 
+                                                        printf("R%d: NADA\n", pilharot[top].inicio);
                                                     }
                     LBRACE lista_instrucoes RBRACE  { 
                                                         printf("\tGOTO R%d\n", pilharot[top].inicio); 
-                                                        printf("R%d: NADA\n\n", pilharot[top].fim);
+                                                        printf("R%d: NADA\n", pilharot[top].fim);
                                                         pop(); 
                                                     }
                   | IF                              {
@@ -137,6 +147,7 @@ desv_condicionais : WHILE                           {
                                                         pop();
                                                     }
                   ;
+else : ELSE LBRACE lista_instrucoes RBRACE  | ;
 
 /* )"%d", a (scanf */
 printf : LPAR REFINT VIRG expressao RPAR PRINTF     {   printf("\tIMPR\n"); }
@@ -144,13 +155,8 @@ printf : LPAR REFINT VIRG expressao RPAR PRINTF     {   printf("\tIMPR\n"); }
 
 /* )"%d", &var(printf */
 scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {   
-                                                        printf("\tLEIA\n");
-                                                        aux = getendereco($5);
-                                                        if (aux == -1) {
-                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $5);
-                                                            return; 
-                                                        }        
-                                                        printf("\tPUSH %%%d\n", aux); 
+                                                        printf("\tLEIA\n");       
+                                                        printf("\tPUSH %%%d\n", getendereco($5)); 
                                                     }
       ;
 
@@ -172,25 +178,19 @@ expressao : LPAR expressao RPAR
           | NUM                                     {   printf("\tPUSH %d\n", $1);                  }
           | ID                                      {   
                                                         aux = getendereco($1);
-                                                        if (aux == -1) {
-                                                             fprintf(stderr,"ERRO SEMÂNTICO: variável \"%s\" não declarada.\n", $1);
-                                                            return; 
-                                                        }
-                                                        printf("\tPUSH %%%d\n",  aux);  
+                                                        printf("\tPUSH %%%d\n",  getendereco($1));  
                                                     }
           ; 
 
 %%
 
-// extern FILE *yyin;                   // (*) descomente para ler de um arquivo
+extern FILE *yyin;                   
 
 int main(int argc, char *argv[]) {
 
-//    yyin = fopen(argv[1], "r");       // (*)
-
+    yyin = fopen(argv[1], "r");       
     yyparse();
-
-//    fclose(yyin);                     // (*)
+    fclose(yyin);                     
 
     return 0;
 }
