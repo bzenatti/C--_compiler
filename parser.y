@@ -72,7 +72,6 @@ void pop() {
 %token WHILE IF ELSE SCANF PRINTF
 %token LPAR RPAR
 %token LBRACE RBRACE
-%token <str_val>STRING
 %token REFINT VIRG END
 
 /* resulve conflitos de ambiguidade */
