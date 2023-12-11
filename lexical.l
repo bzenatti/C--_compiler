@@ -43,10 +43,6 @@
                             return ID; 
                         }       
 
-\"([^"\\]|\\.)*\"       { 
-                            yylval.str_val = strdup(yytext); 
-                            return STRING; 
-                        }
 
 "\\\\".*   	{}                      // Ignora comentários. Invertido para C--
 " " 		{}
