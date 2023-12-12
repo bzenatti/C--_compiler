@@ -100,7 +100,7 @@ lista_instrucoes : instrucao
                  | lista_instrucoes instrucao
                  ;
 
-instrucao : condicionais
+instrucao : LPAR  condicao  RPAR desv_condicionais
           | PEV printf
           | PEV scanf
           | PEV decl 
@@ -136,10 +136,6 @@ atrib : expressao ATRIB ID                          {
     ) a < c ( while } {
     ) a != 0 ( else } { if  } {
 */
-
-condicionais: LPAR  condicao  RPAR 
-            desv_condicionais
-            ;
 
 desv_condicionais : WHILE                           {  
                                                         push((rotulo){++nrots, ++nrots});
