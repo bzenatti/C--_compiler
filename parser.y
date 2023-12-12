@@ -105,7 +105,7 @@ instrucao : LPAR  condicao  RPAR desv_condicionais
           | PEV scanf
           | PEV decl 
           | PEV atrib           
-          ;
+          |;
 
 /* 
     ; a char
@@ -149,7 +149,8 @@ desv_condicionais : WHILE                           {
                                                         pop(); 
                                                     }
                   | IF                              {
-                                                        push((rotulo){nrots, ++nrots});
+                                                        push((rotulo){++nrots, ++nrots});
+                                                        imprimir_buffer();
                                                         fprintf(output, "\tGFALSE R%d\n", (pilharot[top].inicio)); 
                                                     }
                     LBRACE lista_instrucoes RBRACE  { 
@@ -171,7 +172,7 @@ printf : LPAR REFINT VIRG expressao                 {   imprimir_buffer();      
 /* )"%d", &var(printf */
 scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {   
                                                         fprintf(output, "\tLEIA\n");       
-                                                        fprintf(output, "\tPUSH %%%d\n", getendereco($5)); 
+                                                        fprintf(output, "\tATR %%%d\n", getendereco($5)); 
                                                     }
       ;
 
