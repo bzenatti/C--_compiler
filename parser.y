@@ -105,7 +105,7 @@ instrucao : LPAR  condicao  RPAR desv_condicionais
           | PEV scanf
           | PEV decl 
           | PEV atrib           
-          |;
+          ;
 
 /* 
     ; a char
@@ -172,7 +172,7 @@ printf : LPAR REFINT VIRG expressao                 {   imprimir_buffer();      
 /* )"%d", &var(printf */
 scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {   
                                                         fprintf(output, "\tLEIA\n");       
-                                                        fprintf(output, "\tATR %%%d\n", getendereco($5)); 
+                                                        fprintf(output, "\tA %%%d\n", getendereco($5)); 
                                                     }
       ;
 
