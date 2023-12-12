@@ -34,7 +34,7 @@
 "printf"  	{ return SCANF;         }   // Invertido para C--
 "scanf"  	{ return PRINTF;        }
 
-[0-9]+ { 
+-?[0-9]+ { 
     yylval.int_val = atoi(yytext);
     return NUM; }                       // yytext eh uma string com o texto em si do token reconhecido
 
