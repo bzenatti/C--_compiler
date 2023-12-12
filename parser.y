@@ -172,7 +172,7 @@ printf : LPAR REFINT VIRG expressao                 {   imprimir_buffer();      
 /* )"%d", &var(printf */
 scanf : LPAR  REFINT  VIRG  END  ID  RPAR  SCANF    {   
                                                         fprintf(output, "\tLEIA\n");       
-                                                        fprintf(output, "\tA %%%d\n", getendereco($5)); 
+                                                        fprintf(output, "\tATR %%%d\n", getendereco($5)); 
                                                     }
       ;
 
