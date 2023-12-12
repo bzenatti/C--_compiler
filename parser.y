@@ -53,7 +53,7 @@ typedef struct {
 
 // Pilha de rótulos
 rotulo pilharot[MAX];
-int nrots = 0;
+int nrots = -1;
 int top = -1;
 
 void push(rotulo rot) {
@@ -142,7 +142,7 @@ condicionais: LPAR  condicao  RPAR
             ;
 
 desv_condicionais : WHILE                           {  
-                                                        push((rotulo){nrots, ++nrots});
+                                                        push((rotulo){++nrots, ++nrots});
                                                         fprintf(output, "R%d: NADA\n", pilharot[top].inicio);
                                                         imprimir_buffer();
                                                         fprintf(output, "\tGFALSE R%d\n", (pilharot[top].fim));
@@ -212,7 +212,7 @@ expressao : LPAR expressao RPAR
 extern FILE *yyin;                   
 
 int main(int argc, char *argv[]) {
-    output = fopen("programa.pill", "w");
+    output = fopen("programa.pil", "w");
     if (output == NULL) {
         printf("Erro ao abrir o arquivo.\n");
         return 1;
